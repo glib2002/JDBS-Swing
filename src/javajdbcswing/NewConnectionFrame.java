@@ -16,7 +16,6 @@
  */
 package javajdbcswing;
 
-import javajdbcswing.db.DAO;
 import javajdbcswing.db.JFrameDAO;
 
 /**
@@ -26,9 +25,9 @@ import javajdbcswing.db.JFrameDAO;
 public class NewConnectionFrame extends javax.swing.JDialog {
 
     private MainFrame mainFrame;
-    public static String hostname;
-    public static String username;
-    public static String password;
+    public String hostname;
+    public String username;
+    public String password;
     /**
      * Creates new form NewConnectionFrame
      */

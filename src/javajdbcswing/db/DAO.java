@@ -31,14 +31,28 @@ import java.util.List;
 public class DAO {
 
     private String connectionString;
+    private String hostname;
     private String username;
     private String password;
-    public static ResultSet rs;
 
     public DAO(String host, String username, String password) {
-        this.connectionString = String.format("jdbc:mysql://%s/", host);
+        this.hostname = host;
         this.username = username;
         this.password = password;
+        
+        this.connectionString = String.format("jdbc:mysql://%s/", host);
+    }
+
+    public String getHostname() {
+        return hostname;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public Connection connect() throws SQLException {
@@ -49,7 +63,7 @@ public class DAO {
         List<String> databaseList = new ArrayList<>();
 
         try (Connection conn = connect()) {
-            rs = conn.createStatement().executeQuery("SHOW DATABASES");
+            ResultSet rs = conn.createStatement().executeQuery("SHOW DATABASES");
 
             while (rs.next()) {
                 databaseList.add(rs.getString(1));

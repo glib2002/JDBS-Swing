@@ -18,10 +18,11 @@ package javajdbcswing;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javajdbcswing.db.JFrameDAO;
@@ -29,13 +30,13 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 /**
  *
  * @author CodeFireUA <edu@codefire.com.ua>
  */
-import javajdbcswing.db.DAO;
 //host name 129.0.0.1
 public class MainFrame extends javax.swing.JFrame {
 
@@ -54,9 +55,9 @@ public class MainFrame extends javax.swing.JFrame {
         if (frameDAO != null) {
             try {
                 Object[] databaseArray = frameDAO.getDatabaseList().toArray();
-                
+
                 jcbDatabases.setModel(new DefaultComboBoxModel(databaseArray));
-                
+
             } catch (SQLException ex) {
                 Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -82,7 +83,8 @@ public class MainFrame extends javax.swing.JFrame {
         jtData = new javax.swing.JTable();
         jSeparator1 = new javax.swing.JSeparator();
         jbrDatabase = new javax.swing.JButton();
-        jLayeredPane1 = new javax.swing.JLayeredPane();
+        jtfQuery = new javax.swing.JTextField();
+        jbExecuteQuery = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jmFile = new javax.swing.JMenu();
         jmiNewConnection = new javax.swing.JMenuItem();
@@ -131,16 +133,14 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jLayeredPane1Layout = new javax.swing.GroupLayout(jLayeredPane1);
-        jLayeredPane1.setLayout(jLayeredPane1Layout);
-        jLayeredPane1Layout.setHorizontalGroup(
-            jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
-        jLayeredPane1Layout.setVerticalGroup(
-            jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
+        jtfQuery.setText("SELECT * FROM ``");
+
+        jbExecuteQuery.setText("EXECUTE SQL");
+        jbExecuteQuery.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbExecuteQueryActionPerformed(evt);
+            }
+        });
 
         jmFile.setText("File");
 
@@ -187,16 +187,15 @@ public class MainFrame extends javax.swing.JFrame {
                             .addComponent(jLabel2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel3)
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLayeredPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jbrDatabase)))
+                                .addComponent(jbrDatabase)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jbExecuteQuery))
+                            .addComponent(jtfQuery))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -216,15 +215,15 @@ public class MainFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
-                            .addComponent(jScrollPane1))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLayeredPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(145, 145, 145)))
-                .addComponent(jbrDatabase)
-                .addContainerGap(23, Short.MAX_VALUE))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jtfQuery, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jbrDatabase)
+                            .addComponent(jbExecuteQuery)))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -256,6 +255,13 @@ public class MainFrame extends javax.swing.JFrame {
             evt.consume();
 
             showTable();
+            
+            StringBuilder sb = new StringBuilder("SELECT * FROM ")
+                    .append("`").append(jcbDatabases.getSelectedItem())
+                    .append("`.`")
+                    .append(jlTables.getSelectedValue()).append("` LIMIT 1000");
+            
+            jtfQuery.setText(sb.toString());
         }
 
     }//GEN-LAST:event_jlTablesMouseClicked
@@ -300,16 +306,50 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jmiNewConnectionActionPerformed
 
     private void jbrDatabaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbrDatabaseActionPerformed
-        
-        
-       JFrameDAO jfdao = new JFrameDAO( NewConnectionFrame.hostname,NewConnectionFrame.username,NewConnectionFrame.password);
-       updateDao(jfdao); 
 
-
-
-
+        refreshDatabases();
 
     }//GEN-LAST:event_jbrDatabaseActionPerformed
+
+    private void jbExecuteQueryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbExecuteQueryActionPerformed
+        DefaultTableModel defaultTableModel = new DefaultTableModel();
+
+        //UPDATE `test`.`articles` SET title = 'OK' WHERE DATE(timestamp) = DATE('2016-06-09');
+        //SELECT * FROM `test`.`articles` WHERE author_id = 1
+        try (Connection conn = frameDAO.connect()) {
+            Statement stmt = conn.createStatement();
+            boolean hasRS =stmt.execute(jtfQuery.getText());
+            if (hasRS) {
+                ResultSet rs = stmt.getResultSet();
+
+                Vector<String> columns = new Vector<>();
+                ResultSetMetaData metaData = rs.getMetaData();
+                for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                    columns.add(metaData.getColumnName(i));
+                }
+
+//            defaultTableModel.setColumnIdentifiers(columns);
+                Vector<Vector> rows = new Vector<>();
+
+                while (rs.next()) {
+                    Vector<Object> cells = new Vector<>();
+
+                    for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                        cells.add(rs.getObject(i));
+                    }
+
+                    rows.add(cells);
+                }
+
+                defaultTableModel.setDataVector(rows, columns);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        jtData.setModel(defaultTableModel);
+
+    }//GEN-LAST:event_jbExecuteQueryActionPerformed
 
     /**
      * @param args the command line arguments
@@ -323,12 +363,12 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
     }
-    
+
     public void updateDao(JFrameDAO dao) {
         this.frameDAO = dao;
-        
+
         refreshDatabases();
-        
+
         jcbDatabases.setEnabled(true);
         jbShowTables.setEnabled(true);
         jlTables.setEnabled(true);
@@ -339,12 +379,12 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JButton jbExecuteQuery;
     private javax.swing.JButton jbShowTables;
     public javax.swing.JButton jbrDatabase;
     private javax.swing.JComboBox<String> jcbDatabases;
@@ -353,5 +393,6 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem jmiExit;
     private javax.swing.JMenuItem jmiNewConnection;
     private javax.swing.JTable jtData;
+    private javax.swing.JTextField jtfQuery;
     // End of variables declaration//GEN-END:variables
 }
